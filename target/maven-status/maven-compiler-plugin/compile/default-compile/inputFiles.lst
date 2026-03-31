@@ -1,0 +1,17 @@
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\ai\AiProperties.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\ai\AiTaskSuggestionClient.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\ai\OpenAiTaskSuggestionClient.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\controller\TaskController.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\dto\AiTaskSuggestionRequest.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\dto\AiTaskSuggestionResponse.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\dto\TaskRequest.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\dto\TaskResponse.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\exception\RestExceptionHandler.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\exception\TaskNotFoundException.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\model\Priority.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\model\Task.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\model\TaskStatus.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\repository\TaskRepository.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\service\AiTaskSuggestionService.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\service\TaskService.java
+C:\Users\Owner\assessment\src\main\java\com\example\taskmanager\TaskManagerApplication.java

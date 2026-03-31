@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    /* Page-level layout and typography. */
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      background: #f5f7fb;
+      color: #1b1d23;
+    }
+
+    /* Main responsive wrapper. */
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+
+    /* Reusable card UI shell for each functional section. */
+    .card {
+      background: #ffffff;
+      border: 1px solid #dbe1ee;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(34, 46, 75, 0.06);
+    }
+
+    /* Heading spacing reset. */
+    h1, h2 {
+      margin: 0 0 0.75rem;
+    }
+
+    /* Form controls layout. */
+    form {
+      display: grid;
+      gap: 0.6rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    /* Shared control styling for inputs and buttons. */
+    textarea, input, select, button {
+      font: inherit;
+      padding: 0.55rem;
+      border-radius: 8px;
+      border: 1px solid #b8c3d8;
+    }
+
+    /* Primary button look and hover state. */
+    button {
+      cursor: pointer;
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #1a45be;
+    }
+
+    /* Task table styling. */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e6e9f2;
+      text-align: left;
+      padding: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    /* AI output display box. */
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f1f4fa;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #d8dfef;
+      min-height: 70px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Intro section. -->
+    <section class="card">
+      <h1>Personal Task Manager</h1>
+      <p>Use this page to test CRUD and AI task suggestion endpoints.</p>
+    </section>
+
+    <!-- Form for creating tasks via POST /tasks. -->
+    <section class="card">
+      <h2>Create Task</h2>
+      <form id="createTaskForm">
+        <input id="title" placeholder="Title" required>
+        <input id="description" placeholder="Description">
+        <input id="dueDate" type="date">
+        <select id="priority">
+          <option>LOW</option>
+          <option selected>MEDIUM</option>
+          <option>HIGH</option>
+        </select>
+        <select id="status">
+          <option selected>TODO</option>
+          <option>IN_PROGRESS</option>
+          <option>DONE</option>
+        </select>
+        <button type="submit">Create</button>
+      </form>
+    </section>
+
+    <!-- Table view for listing tasks from GET /tasks. -->
+    <section class="card">
+      <h2>Tasks</h2>
+      <button id="refreshBtn" type="button">Refresh Tasks</button>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Due Date</th>
+            <th>Priority</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody"></tbody>
+      </table>
+    </section>
+
+    <!-- Form and output panel for POST /tasks/suggest. -->
+    <section class="card">
+      <h2>AI Task Suggestion</h2>
+      <form id="suggestForm">
+        <textarea id="prompt" rows="3" placeholder="e.g. remind me to submit the quarterly report before Friday" required></textarea>
+        <button type="submit">Suggest Task</button>
+      </form>
+      <h3>Result</h3>
+      <pre id="suggestionOutput">No suggestion yet.</pre>
+    </section>
+  </div>
+
+  <script>
+    // Loads tasks and renders rows into the table body.
+    async function fetchTasks() {
+      const res = await fetch('/tasks');
+      const tasks = await res.json();
+      const body = document.getElementById('taskTableBody');
+      body.innerHTML = '';
+
+      for (const task of tasks) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${task.id}</td>
+          <td>${task.title}</td>
+          <td>${task.dueDate ?? ''}</td>
+          <td>${task.priority}</td>
+          <td>${task.status}</td>
+        `;
+        body.appendChild(row);
+      }
+    }
+
+    // Handles create-task form submission and refreshes table on success.
+    document.getElementById('createTaskForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value || null,
+        dueDate: document.getElementById('dueDate').value || null,
+        priority: document.getElementById('priority').value,
+        status: document.getElementById('status').value
+      };
+
+      const res = await fetch('/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        alert('Failed to create task');
+        return;
+      }
+
+      event.target.reset();
+      document.getElementById('priority').value = 'MEDIUM';
+      document.getElementById('status').value = 'TODO';
+      await fetchTasks();
+    });
+
+    // Manual refresh button for task list.
+    document.getElementById('refreshBtn').addEventListener('click', fetchTasks);
+
+    // Sends prompt to AI endpoint and renders formatted JSON response.
+    document.getElementById('suggestForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const prompt = document.getElementById('prompt').value;
+      const output = document.getElementById('suggestionOutput');
+
+      const res = await fetch('/tasks/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      const json = await res.json();
+      output.textContent = JSON.stringify(json, null, 2);
+    });
+
+    // Initial data load when the page opens.
+    fetchTasks();
+  </script>
+</body>
+</html>
